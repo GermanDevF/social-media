@@ -25,6 +25,8 @@ model User {
   avatarUrl    String?
   name         String
   sessions     Session[]
+  posts        Post[]
+  comments     Comment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,4 +42,32 @@ model Session {
   user User @relation(references: [id], fields: [userId], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(references: [id], fields: [userId], onDelete: Cascade)
+  comments Comment[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(references: [id], fields: [userId], onDelete: Cascade)
+  post Post @relation(references: [id], fields: [postId], onDelete: Cascade)
+
+  @@map("comments")
 }

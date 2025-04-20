@@ -43,7 +43,7 @@ export default function SignUpForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
         {error && (
-          <div className="rounded-md bg-red-500/10 p-4 text-sm text-red-500">
+          <div className="rounded-lg bg-red-500/10 p-4 text-sm text-red-500">
             {error}
           </div>
         )}
