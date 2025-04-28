@@ -1,13 +1,12 @@
+import { cn } from "@/lib/utils";
+import { Eye, EyeClosed } from "lucide-react";
 import { forwardRef, useState } from "react";
 import { Input } from "./ui/input";
-import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
-import { Eye, EyeClosed } from "lucide-react";
 
 const PasswordInput = forwardRef<
   HTMLInputElement,
   React.ComponentProps<"input">
->(({ className, type, ...rest }, ref) => {
+>(({ className, ...rest }, ref) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (

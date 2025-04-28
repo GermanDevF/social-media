@@ -1,23 +1,26 @@
-import { validateRequest } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { getPostDataInclude, PostPage } from "@/lib/types";
 import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { FollowerInfo, getPostDataInclude, PostPage } from "@/lib/types";
+import { validateRequest } from "@/auth";
 
-export async function GET(req: NextRequest) {
+interface Params {
+  id: string;
+}
+
+export async function GET(req: NextRequest, { params }: { params: Params }) {
+  const { id } = await params;
   try {
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
-
     const pageSize = 10;
+    console.log("cursor", cursor);
 
-    const { user } = await validateRequest();
-
-    if (!user) {
+    const { user: loggedUser } = await validateRequest();
+    if (!loggedUser)
       return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const posts = await prisma.post.findMany({
-      include: getPostDataInclude(user.id),
-      where: { published: true },
+      include: getPostDataInclude(loggedUser.id),
+      where: { published: true, userId: id },
       orderBy: { createdAt: "desc" },
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
@@ -32,9 +35,8 @@ export async function GET(req: NextRequest) {
 
     return Response.json(data);
   } catch (error) {
-    console.error("Error fetching posts for you:", error);
     return Response.json(
-      { error: "Error fetching posts for you" },
+      { error: "Error obteniendo los posts" },
       { status: 500 },
     );
   }

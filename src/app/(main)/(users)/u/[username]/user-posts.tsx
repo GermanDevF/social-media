@@ -8,14 +8,18 @@ import kyInstance from "@/lib/ky";
 import { PostPage } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-export default function ForYouFeed() {
+interface UserPostsProps {
+  userId: string;
+}
+
+export default function UserPosts({ userId }: UserPostsProps) {
   const { data, fetchNextPage, isFetchingNextPage, status, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["post-feed", "for-you"],
+      queryKey: ["post-feed", "user-posts", userId],
       queryFn: ({ pageParam }) =>
         kyInstance
           .get(
-            "/api/posts/for-you",
+            `/api/users/${userId}/posts`,
             pageParam ? { searchParams: { cursor: pageParam } } : {},
           )
           .json<PostPage>(),
@@ -27,7 +31,10 @@ export default function ForYouFeed() {
   const posts = data?.pages.flatMap((page) => page.posts) || [];
 
   if (status === "error") {
-    return <div>Error al cargar publicaciones</div>;
+    console.error("Error al cargar publicaciones");
+    return (
+      <div>Error al cargar publicaciones. Por favor, inténtalo de nuevo.</div>
+    );
   }
 
   if (status === "pending") {
@@ -40,17 +47,8 @@ export default function ForYouFeed() {
         <div className="flex flex-col items-center gap-3 p-5 text-center">
           <h2 className="text-lg font-bold">No hay publicaciones</h2>
           <p className="text-muted-foreground">
-            No hay publicaciones para mostrar en este momento.
+            Este usuario no ha publicado nada aún.
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-fit"
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage || !hasNextPage}
-          >
-            Ver más
-          </Button>
         </div>
       </div>
     );
@@ -59,9 +57,11 @@ export default function ForYouFeed() {
   return (
     <InfiniteScrollContainer
       className="animate-fade-in space-y-5 overflow-hidden"
-      onBottomReached={() =>
-        !isFetchingNextPage && hasNextPage && fetchNextPage()
-      }
+      onBottomReached={() => {
+        if (!isFetchingNextPage && hasNextPage) {
+          fetchNextPage();
+        }
+      }}
     >
       {posts.map((post) => (
         <Post key={post.id} post={post} />

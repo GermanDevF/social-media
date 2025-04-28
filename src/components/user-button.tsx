@@ -1,37 +1,26 @@
 "use client";
 
+import { logout } from "@/app/(auth)/actions";
 import { useSession } from "@/app/(main)/session-provider";
+import { cn } from "@/lib/utils";
+import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
+import { useQueryClient } from "@tanstack/react-query";
+import { LogOut, UserIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { Suspense } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import UserAvatar from "./user-avatar";
-import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
-import Link from "next/link";
-import {
-  CheckSquare2,
-  LogOut,
-  Monitor,
-  Moon,
-  Sun,
-  UserIcon,
-} from "lucide-react";
-import { logout } from "@/app/(auth)/actions";
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import { Suspense } from "react";
-import dynamic from "next/dynamic";
-import { Skeleton } from "./ui/skeleton";
-import { useQueryClient } from "@tanstack/react-query";
 import ThemeSwitcherSkeleton from "./ui/skeletons/theme-switcher-skeleton";
+import UserAvatar from "./user-avatar";
+
 const ThemeSwitch = dynamic(() => import("./theme-switch"), { ssr: false });
+
 interface UserButtonProps {
   className?: string;
 }
@@ -39,7 +28,6 @@ interface UserButtonProps {
 export default function UserButton({ className }: UserButtonProps) {
   const { user } = useSession();
 
-  const { theme } = useTheme();
   const queryClient = useQueryClient();
 
   return (
@@ -54,7 +42,7 @@ export default function UserButton({ className }: UserButtonProps) {
           Sesión iniciada como @{user.username}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href={`/users/${user.username}`}>
+        <Link href={`/u/${user.username}`}>
           <DropdownMenuItem className="cursor-pointer">
             <UserIcon className="mr-2 size-4" />
             Mi perfil

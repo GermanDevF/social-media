@@ -31,3 +31,13 @@ export const createPostSchema = z.object({
 });
 
 export type CreatePostValues = z.infer<typeof createPostSchema>;
+
+export const updateUserSchema = z.object({
+  displayName: requiredString,
+  bio: z.string().max(1000, {
+    message: "La biografía debe tener menos de 1000 caracteres",
+  }),
+});
+
+export type UpdateUserValues = z.infer<typeof updateUserSchema>;
+

@@ -10,10 +10,11 @@ export async function logout() {
   if (!session) {
     throw new Error("Unauthorized");
   }
+  const luciaInstance = await lucia();
 
-  await lucia.invalidateSession(session.id);
+  await luciaInstance.invalidateSession(session.id);
 
-  const sessionCookie = lucia.createBlankSessionCookie();
+  const sessionCookie = luciaInstance.createBlankSessionCookie();
 
   const cookie = await cookies();
 

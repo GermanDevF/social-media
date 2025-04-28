@@ -4,6 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import ReactQueryProvider from "./react-query-provider";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { fileRute } from "./api/uploadthing/core";
+import { extractRouterConfig } from "uploadthing/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +36,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NextSSRPlugin routerConfig={extractRouterConfig(fileRute)} />
         <ReactQueryProvider>
           <ThemeProvider
             attribute="class"

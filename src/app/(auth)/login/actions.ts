@@ -38,8 +38,10 @@ export async function login(
       return { error: "Nombre de usuario o contraseña incorrectos" };
     }
 
-    const session = await lucia.createSession(existingUser.id, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
+    const luciaInstance = await lucia();
+
+    const session = await luciaInstance.createSession(existingUser.id, {});
+    const sessionCookie = luciaInstance.createSessionCookie(session.id);
     const cookie = await cookies();
     cookie.set(
       sessionCookie.name,

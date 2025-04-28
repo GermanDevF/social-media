@@ -1,78 +1,81 @@
 import { validateRequest } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { userDataSelect } from "@/lib/types";
-import UserAvatar from "./user-avatar";
+import { formatNumber } from "@/lib/utils";
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "./ui/button";
-import { unstable_cache } from "next/cache";
-import { formatNumber } from "@/lib/utils";
+import FollowButton from "./follow-button";
 import TrendsSidebarSkeleton from "./ui/skeletons/trends-sidebar-skeleton";
-
-async function fetchUsersToFollow(userId: string) {
-  return prisma.user.findMany({
-    where: {
-      NOT: { id: userId },
-    },
-    take: 5,
-    select: userDataSelect,
-  });
-}
-
-function UserCard({
-  user,
-}: {
-  user: {
-    id: string;
-    username: string;
-    displayName: string;
-    avatarUrl: string | null;
-  };
-}) {
-  return (
-    <div key={user.id} className="flex items-center justify-between gap-3">
-      <Link href={`/u/${user.username}`} className="flex items-center gap-3">
-        <UserAvatar avatarUrl={user.avatarUrl} className="flex-none" />
-        <div>
-          <p className="text-foreground line-clamp-1 font-semibold break-all hover:underline">
-            {user.displayName}
-          </p>
-          <p className="text-muted-foreground line-clamp-1 break-all hover:underline">
-            @{user.username}
-          </p>
-        </div>
-      </Link>
-      <Button>Seguir</Button>
-    </div>
-  );
-}
+import UserAvatar from "./user-avatar";
+import { getUserDataSelect } from "@/lib/types";
+import UserTooltip from "./user-tooltip";
 
 async function WhoToFollow() {
   const { user } = await validateRequest();
 
   if (!user) return null;
 
-  const usersToFollow = await fetchUsersToFollow(user.id);
+  const usersToFollow = await prisma.user.findMany({
+    where: {
+      NOT: {
+        id: user.id,
+      },
+      followers: {
+        none: {
+          followerId: user.id,
+        },
+      },
+    },
+    select: getUserDataSelect(user.id),
+    take: 5,
+  });
+
+  if (usersToFollow.length === 0) return null;
 
   return (
     <div className="bg-card flex flex-col gap-3 rounded-lg p-4 shadow-sm">
       <h2 className="text-lg font-bold">¿A quién seguir?</h2>
       {usersToFollow.map((user) => (
-        <UserCard key={user.id} user={user} />
+        <div key={user.id} className="flex items-center justify-between gap-3">
+          <UserTooltip user={user}>
+            <Link
+              href={`/u/${user.username}`}
+              className="flex items-center gap-3"
+            >
+              <UserAvatar avatarUrl={user.avatarUrl} className="flex-none" />
+              <div>
+                <p className="text-foreground line-clamp-1 font-semibold break-all hover:underline">
+                  {user.displayName}
+                </p>
+                <p className="text-muted-foreground line-clamp-1 break-all hover:underline">
+                  @{user.username}
+                </p>
+              </div>
+            </Link>
+          </UserTooltip>
+          <FollowButton
+            userId={user.id}
+            initialState={{
+              followers: user._count.followers,
+              isFollowedByUser: user.followers.some(
+                ({ followerId }) => followerId === user.id,
+              ),
+            }}
+          />
+        </div>
       ))}
     </div>
   );
 }
 
 const getTrendingTopics = unstable_cache(
-  async (userId: string) => {
+  async () => {
     const result = await prisma.$queryRaw<{ hashtag: string; count: bigint }[]>`
-    SELECT LOWER(unnest(regexp_matches(content, '#[[:alnum:]_]+', 'g'))) AS hashtag, COUNT(*) AS count
-    FROM posts
-    GROUP BY hashtag
-    ORDER BY count DESC, hashtag ASC
-    LIMIT 5
+      SELECT LOWER(unnest(regexp_matches(content, '#[[:alnum:]_]+', 'g'))) AS hashtag, COUNT(*) AS count
+      FROM posts
+      GROUP BY (hashtag)
+      ORDER BY count DESC, hashtag ASC
+      LIMIT 5
   `;
     return result.map((row) => ({
       hashtag: row.hashtag,
@@ -86,7 +89,9 @@ const getTrendingTopics = unstable_cache(
 );
 
 async function TrendingTopics() {
-  const trendingTopics = await getTrendingTopics("");
+  const trendingTopics = await getTrendingTopics();
+
+  if (trendingTopics.length === 0) return null;
 
   return (
     <div className="bg-card space-y-5 rounded-lg p-4 shadow-sm">
