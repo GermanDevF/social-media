@@ -1,5 +1,6 @@
 import { validateRequest } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { MediaType } from "@prisma/client";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError, UTApi } from "uploadthing/server";
 
@@ -41,7 +42,6 @@ export const fileRute = {
         "/f/",
         `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
       );
-      console.log({ newAvatarUrl });
 
       await prisma.user.update({
         where: { id: metadata.user.id },
@@ -51,6 +51,38 @@ export const fileRute = {
       return {
         url: newAvatarUrl,
       };
+    }),
+  attachment: f({
+    image: {
+      maxFileCount: 5,
+      maxFileSize: "4MB",
+    },
+    video: {
+      maxFileCount: 5,
+      maxFileSize: "64MB",
+    },
+  })
+    .middleware(async () => {
+      const { user } = await validateRequest();
+
+      if (!user) throw new UploadThingError("Unauthorized");
+
+      return {};
+    })
+    .onUploadComplete(async ({ file }) => {
+      const media = await prisma.media.create({
+        data: {
+          url: file.url.replace(
+            "/f/",
+            `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+          ),
+          type: file.type.startsWith("image")
+            ? MediaType.IMAGE
+            : MediaType.VIDEO,
+        },
+      });
+
+      return { mediaId: media.id };
     }),
 } satisfies FileRouter;
 

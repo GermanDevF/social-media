@@ -28,6 +28,9 @@ export type LoginValues = z.infer<typeof loginSchema>;
 
 export const createPostSchema = z.object({
   content: requiredString,
+  mediaIds: z.array(z.string()).max(5, {
+    message: "No se puede agregar más de 5 archivos",
+  }),
 });
 
 export type CreatePostValues = z.infer<typeof createPostSchema>;
@@ -40,4 +43,3 @@ export const updateUserSchema = z.object({
 });
 
 export type UpdateUserValues = z.infer<typeof updateUserSchema>;
-
