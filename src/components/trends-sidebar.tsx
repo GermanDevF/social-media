@@ -30,8 +30,6 @@ async function WhoToFollow() {
     take: 5,
   });
 
-  if (usersToFollow.length === 0) return null;
-
   return (
     <div className="bg-card flex flex-col gap-3 rounded-lg p-4 shadow-sm">
       <h2 className="text-lg font-bold">¿A quién seguir?</h2>
@@ -91,8 +89,6 @@ const getTrendingTopics = unstable_cache(
 async function TrendingTopics() {
   const trendingTopics = await getTrendingTopics();
 
-  if (trendingTopics.length === 0) return null;
-
   return (
     <div className="bg-card space-y-5 rounded-lg p-4 shadow-sm">
       <div className="text-xl font-bold">Temas del momento</div>
@@ -109,7 +105,7 @@ async function TrendingTopics() {
               className="line-clamp-1 font-semibold break-all hover:underline"
               title={hashtag}
             >
-              {title}
+              #{title}
             </p>
             <p className="text-muted-foreground line-clamp-1 break-all hover:underline">
               {formatNumber(count)}{" "}
