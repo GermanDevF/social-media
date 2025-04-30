@@ -26,6 +26,7 @@ model User {
   comments     Comment[]
   followers    Follow[]  @relation("Followers")
   following    Follow[]  @relation("Following")
+  likes        Like[]
 
   @@map("users")
 }
@@ -49,6 +50,7 @@ model Post {
   user        User      @relation(references: [id], fields: [userId], onDelete: Cascade)
   comments    Comment[]
   attachments Media[]
+  likes       Like[]
 
   @@map("posts")
 }
@@ -91,4 +93,17 @@ model Media {
 enum MediaType {
   IMAGE
   VIDEO
+}
+
+model Like {
+  userId String
+  user   User   @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  postId String
+  post   Post   @relation(references: [id], fields: [postId], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@map("likes")
 }

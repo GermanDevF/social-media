@@ -29,18 +29,17 @@ export default function PostEditor() {
     uploadProgress,
   } = useMediaUpload();
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject } =
-    useDropzone({
-      onDrop: (acceptedFiles) => {
-        startUpload(acceptedFiles);
-      },
-      accept: {
-        "image/*": [".png", ".jpg", ".jpeg"],
-        "video/*": [".mp4"],
-      },
-    });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      startUpload(acceptedFiles);
+    },
+    accept: {
+      "image/*": [".png", ".jpg", ".jpeg"],
+      "video/*": [".mp4"],
+    },
+  });
 
-  const { onClick, ...rootProps } = getRootProps();
+  const { onClick: _, ...rootProps } = getRootProps();
 
   const editor = useEditor({
     extensions: [
