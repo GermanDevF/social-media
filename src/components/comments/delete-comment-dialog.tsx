@@ -1,6 +1,5 @@
 import { CommentData } from "@/lib/types";
 import { useDeleteCommentMutation } from "./mutations";
-import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +7,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogTrigger,
 } from "../ui/dialog";
 import LoadingButton from "../loading-button";
 

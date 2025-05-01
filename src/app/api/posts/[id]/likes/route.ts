@@ -1,6 +1,7 @@
 import { validateRequest } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { LikeInfo } from "@/lib/types";
+import { NotificationType } from "@prisma/client";
 import { NextRequest } from "next/server";
 
 export async function GET(
@@ -61,22 +62,46 @@ export async function POST(
     if (!loggedInUser) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const { id } = await params;
 
-    await prisma.like.upsert({
-      where: {
-        userId_postId: {
+    const post = await prisma.post.findUnique({
+      where: { id },
+      select: {
+        userId: true,
+      },
+    });
+
+    if (!post) {
+      return Response.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    await prisma.$transaction([
+      prisma.like.upsert({
+        where: {
+          userId_postId: {
+            userId: loggedInUser.id,
+            postId: id,
+          },
+        },
+        create: {
           userId: loggedInUser.id,
           postId: id,
         },
-      },
-      create: {
-        userId: loggedInUser.id,
-        postId: id,
-      },
-      update: {},
-    });
+        update: {},
+      }),
+      ...(loggedInUser.id !== post.userId
+        ? [
+            prisma.notification.create({
+              data: {
+                recipientId: post.userId,
+                issuerId: loggedInUser.id,
+                postId: id,
+                type: NotificationType.LIKE,
+              },
+            }),
+          ]
+        : []),
+    ]);
 
     return new Response(null, { status: 204 });
   } catch (err) {
@@ -98,12 +123,33 @@ export async function DELETE(
 
     const { id } = await params;
 
-    await prisma.like.deleteMany({
-      where: {
-        userId: loggedInUser.id,
-        postId: id,
+    const post = await prisma.post.findUnique({
+      where: { id },
+      select: {
+        userId: true,
       },
     });
+
+    if (!post) {
+      return Response.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    await prisma.$transaction([
+      prisma.like.deleteMany({
+        where: {
+          userId: loggedInUser.id,
+          postId: id,
+        },
+      }),
+      prisma.notification.deleteMany({
+        where: {
+          recipientId: post.userId,
+          postId: id,
+          type: NotificationType.LIKE,
+          issuerId: loggedInUser.id,
+        },
+      }),
+    ]);
 
     return new Response(null, { status: 204 });
   } catch (err) {

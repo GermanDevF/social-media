@@ -1,22 +1,20 @@
 import { Metadata } from "next";
-import Bookmarks from "./bookmarks";
+import Notifications from "./notifications";
 import TrendsSidebar from "@/components/trends-sidebar";
 
 export const metadata: Metadata = {
-  title: "Bookmarks",
-  description: "Bookmarks",
+  title: "Notifications",
+  description: "Notifications",
 };
 
-export default function BookmarksPage() {
+export default function NotificationsPage() {
   return (
     <main className="flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">
         <div className="bg-card rounded-lg p-4 shadow-sm">
-          <h1 className="text-center text-xl font-bold">
-            Publicaciones marcadas como favoritas
-          </h1>
+          <h1 className="text-center text-xl font-bold">Notificaciones</h1>
         </div>
-        <Bookmarks />
+        <Notifications />
       </div>
       <TrendsSidebar />
     </main>

@@ -64,7 +64,7 @@ export function useDeleteCommentMutation() {
   const mutation = useMutation({
     mutationFn: deleteComment,
     onSuccess: async (deletedComment) => {
-      const queryKey: QueryKey = ["comments", deletedComment.id];
+      const queryKey: QueryKey = ["comments", deletedComment.postId];
 
       // queryClient.invalidateQueries({ queryKey });
 

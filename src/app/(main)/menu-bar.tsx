@@ -1,12 +1,25 @@
 import { Button } from "@/components/ui/button";
-import { Bell, Bookmark, Home, MessageSquareQuote } from "lucide-react";
+import { Bookmark, Home, MessageSquareQuote } from "lucide-react";
 import Link from "next/link";
-
+import NotificationsButton from "./notifications-button";
+import { validateRequest } from "@/auth";
+import { prisma } from "@/lib/prisma";
 interface MenuBarProps {
   className?: string;
 }
 
-export default function MenuBar({ className }: MenuBarProps) {
+export default async function MenuBar({ className }: MenuBarProps) {
+  const { user } = await validateRequest();
+
+  if (!user) return null;
+
+  const unreadCount = await prisma.notification.count({
+    where: {
+      recipientId: user.id,
+      read: false,
+    },
+  });
+
   return (
     <div className={className}>
       <Button
@@ -20,17 +33,7 @@ export default function MenuBar({ className }: MenuBarProps) {
           <span className="hidden lg:inline">Inicio</span>
         </Link>
       </Button>
-      <Button
-        variant="ghost"
-        className="flex items-center justify-start gap-3"
-        title="Notifications"
-        asChild
-      >
-        <Link href="/notifications">
-          <Bell />
-          <span className="hidden lg:inline">Notificaciones</span>
-        </Link>
-      </Button>
+      <NotificationsButton initialState={{ unreadCount }} />
       <Button
         variant="ghost"
         className="flex items-center justify-start gap-3"

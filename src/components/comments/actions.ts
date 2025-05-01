@@ -4,6 +4,7 @@ import { validateRequest } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getCommentDataInclude, PostData } from "@/lib/types";
 import { createCommentSchema } from "@/lib/validations";
+import { NotificationType } from "@prisma/client";
 
 export async function submitComment(input: {
   content: string;
@@ -17,16 +18,30 @@ export async function submitComment(input: {
     content: input.content,
   });
 
-  const newComment = await prisma.comment.create({
-    data: {
-      content,
-      userId: user.id,
-      postId: input.post.id,
-    },
-    include: getCommentDataInclude(user.id),
-  });
+  const [comment] = await prisma.$transaction([
+    prisma.comment.create({
+      data: {
+        content,
+        userId: user.id,
+        postId: input.post.id,
+      },
+      include: getCommentDataInclude(user.id),
+    }),
+    ...(user.id !== input.post.userId
+      ? [
+          prisma.notification.create({
+            data: {
+              recipientId: input.post.userId,
+              issuerId: user.id,
+              type: NotificationType.COMMENT,
+              postId: input.post.id,
+            },
+          }),
+        ]
+      : []),
+  ]);
 
-  return newComment;
+  return comment;
 }
 
 export async function deleteComment(id: string) {

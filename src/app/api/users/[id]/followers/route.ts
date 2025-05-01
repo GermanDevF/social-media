@@ -2,6 +2,7 @@ import { validateRequest } from "@/auth";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { FollowerInfo } from "@/lib/types";
+import { NotificationType } from "@prisma/client";
 
 type Params = {
   params: { id: string };
@@ -64,16 +65,25 @@ export async function POST(req: NextRequest, { params }: Params) {
       followingId: id,
     };
 
-    await prisma.follow.upsert({
-      where: {
-        followerId_followingId: {
-          followerId: loggedUser.id,
-          followingId: id,
+    await prisma.$transaction([
+      prisma.follow.upsert({
+        where: {
+          followerId_followingId: {
+            followerId: loggedUser.id,
+            followingId: id,
+          },
         },
-      },
-      create: data,
-      update: {},
-    });
+        create: data,
+        update: {},
+      }),
+      prisma.notification.create({
+        data: {
+          recipientId: id,
+          issuerId: loggedUser.id,
+          type: NotificationType.FOLLOW,
+        },
+      }),
+    ]);
 
     return Response.json({ message: "Usuario seguido" }, { status: 200 });
   } catch (error) {
@@ -89,12 +99,21 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 
     if (!loggedUser) return unauthorizedResponse();
 
-    await prisma.follow.deleteMany({
-      where: {
-        followerId: loggedUser.id,
-        followingId: id,
-      },
-    });
+    await prisma.$transaction([
+      prisma.follow.deleteMany({
+        where: {
+          followerId: loggedUser.id,
+          followingId: id,
+        },
+      }),
+      prisma.notification.deleteMany({
+        where: {
+          recipientId: id,
+          issuerId: loggedUser.id,
+          type: NotificationType.FOLLOW,
+        },
+      }),
+    ]);
 
     return Response.json(
       { message: "Usuario dejado de seguir" },

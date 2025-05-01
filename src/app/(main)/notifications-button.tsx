@@ -1,0 +1,47 @@
+"use client";
+import { Bell } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { NotificationCount } from "@/lib/types";
+import kyInstance from "@/lib/ky";
+import { useQuery } from "@tanstack/react-query";
+
+interface NotificationsButtonProps {
+  initialState: NotificationCount;
+}
+
+export default function NotificationsButton({
+  initialState,
+}: NotificationsButtonProps) {
+  const { data } = useQuery({
+    queryKey: ["unread-notifications-count"],
+    queryFn: () =>
+      kyInstance
+        .get("/api/notifications/unread-count")
+        .json<NotificationCount>(),
+    initialData: initialState,
+    refetchInterval: 60 * 1000,
+  });
+
+  return (
+    <Button
+      variant="ghost"
+      className="flex items-center justify-start gap-3"
+      title="Notifications"
+      asChild
+    >
+      <Link href="/notifications">
+        <div className="relative">
+          <Bell />
+          {data?.unreadCount > 0 && (
+            <span className="text-primary-foreground absolute -top-1 -right-1 rounded-full bg-red-500 px-1 text-xs font-medium tabular-nums">
+              {data?.unreadCount}
+            </span>
+          )}
+        </div>
+        <span className="hidden lg:inline">Notificaciones</span>
+      </Link>
+    </Button>
+  );
+}
