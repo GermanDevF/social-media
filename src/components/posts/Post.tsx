@@ -11,6 +11,9 @@ import { Media } from "@prisma/client";
 import Image from "next/image";
 import LikeButton from "./like-button";
 import BookmarkButton from "./bookmark-button";
+import { useState } from "react";
+import { MessageCircle } from "lucide-react";
+import Comments from "../comments/comments";
 
 interface PostProps {
   post: PostData;
@@ -18,6 +21,8 @@ interface PostProps {
 
 export default function Post({ post }: PostProps) {
   const { user } = useSession();
+
+  const [showComments, setShowComments] = useState(false);
 
   return (
     <article className="group/post bg-card space-y-3 rounded-lg p-4 shadow-sm">
@@ -27,7 +32,7 @@ export default function Post({ post }: PostProps) {
             <Link href={`/u/${post.user.username}`} className="flex gap-3">
               <UserAvatar
                 avatarUrl={post.user.avatarUrl}
-                className="hidden sm:inline"
+                className="sm:inline"
               />
             </Link>
           </UserTooltip>
@@ -64,13 +69,19 @@ export default function Post({ post }: PostProps) {
       )}
       <hr className="text-muted-foreground" />
       <div className="flex items-center justify-between gap-5">
-        <LikeButton
-          postId={post.id}
-          initialState={{
-            likes: post._count.likes,
-            isLikedByUser: post.likes.some((like) => like.userId === user.id),
-          }}
-        />
+        <div className="flex items-center gap-5">
+          <LikeButton
+            postId={post.id}
+            initialState={{
+              likes: post._count.likes,
+              isLikedByUser: post.likes.some((like) => like.userId === user.id),
+            }}
+          />
+          <CommentsButton
+            post={post}
+            onClick={() => setShowComments(!showComments)}
+          />
+        </div>
         <BookmarkButton
           postId={post.id}
           initialState={{
@@ -80,6 +91,7 @@ export default function Post({ post }: PostProps) {
           }}
         />
       </div>
+      {showComments && <Comments post={post} />}
     </article>
   );
 }
@@ -134,5 +146,21 @@ function MediaPreview({ attachment }: MediaPreviewProps) {
     <p className="text-destructive">
       Lo sentimos, no se puede mostrar este archivo.
     </p>
+  );
+}
+
+interface CommentsButtonProps {
+  post: PostData;
+  onClick: () => void;
+}
+
+function CommentsButton({ post, onClick }: CommentsButtonProps) {
+  return (
+    <button onClick={onClick} className="flex items-center gap-2">
+      <MessageCircle className="size-5" />
+      <span className="text-sm font-medium tabular-nums">
+        {post._count.comments}
+      </span>
+    </button>
   );
 }
