@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     },
   },
   serverExternalPackages: ["@node-rs/argon2"],
+  transpilePackages: ["@radix-ui/react-icons", "lucide-react"],
   images: {
     remotePatterns: [
       {
