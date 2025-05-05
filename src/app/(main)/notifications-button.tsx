@@ -6,6 +6,7 @@ import Link from "next/link";
 import { NotificationCount } from "@/lib/types";
 import kyInstance from "@/lib/ky";
 import { useQuery } from "@tanstack/react-query";
+import CounterRedDot from "@/components/counter-red-dot";
 
 interface NotificationsButtonProps {
   initialState: NotificationCount;
@@ -34,11 +35,7 @@ export default function NotificationsButton({
       <Link href="/notifications">
         <div className="relative">
           <Bell />
-          {data?.unreadCount > 0 && (
-            <span className="text-primary-foreground absolute -top-1 -right-1 rounded-full bg-red-500 px-1 text-xs font-medium tabular-nums">
-              {data?.unreadCount}
-            </span>
-          )}
+          <CounterRedDot count={data?.unreadCount || 0} />
         </div>
         <span className="hidden lg:inline">Notificaciones</span>
       </Link>

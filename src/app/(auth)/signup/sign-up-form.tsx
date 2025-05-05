@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useState, useTransition } from "react";
 import { signUp } from "./actions";
 import { PasswordInput } from "@/components/password-input";

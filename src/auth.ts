@@ -4,6 +4,7 @@ import { prisma } from "./lib/prisma";
 import { Lucia, Session } from "lucia";
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { Google } from "arctic";
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user);
 
@@ -47,7 +48,22 @@ export type User = {
   displayName: string;
   avatarUrl: string | null;
   googleId: string | null;
+  bio: string | null;
+  createdAt: Date;
+  followers: { followerId: string }[];
+  _count: {
+    posts: number;
+    comments: number;
+    followers: number;
+  };
 };
+
+export const getGoogleAuth = async () =>
+  new Google(
+    process.env.GOOGLE_CLIENT_ID!,
+    process.env.GOOGLE_CLIENT_SECRET!,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/google`,
+  );
 
 // Define los tipos de retorno para mayor claridad
 type ValidateRequestResult =
@@ -104,6 +120,20 @@ export const validateRequest = cache(
         displayName: true,
         avatarUrl: true,
         googleId: true,
+        bio: true,
+        createdAt: true,
+        followers: {
+          select: {
+            followerId: true,
+          },
+        },
+        _count: {
+          select: {
+            posts: true,
+            comments: true,
+            followers: true,
+          },
+        },
       },
     });
 

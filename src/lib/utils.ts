@@ -39,3 +39,11 @@ export function formatNumber(num: number) {
     maximumFractionDigits: 1,
   }).format(num);
 }
+
+
+export function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/ /g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}

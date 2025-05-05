@@ -133,3 +133,7 @@ export interface NotificationCount {
   unreadCount: number;
 }
 
+export interface MessageCount {
+  total_unread_count: number;
+}
+

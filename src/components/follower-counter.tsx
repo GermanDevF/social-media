@@ -1,5 +1,5 @@
 "use client";
-import useFollowerInfo from "@/hooks/useFollowerInfo";
+import useFollowerInfo from "@/hooks/use-follower-info";
 import { FollowerInfo } from "@/lib/types";
 
 interface FollowerCounterProps {

@@ -96,11 +96,7 @@ async function TrendingTopics() {
         const title = hashtag.replace(/#/g, "");
 
         return (
-          <Link
-            key={title}
-            href={`/explore?hashtag=${title}`}
-            className="block"
-          >
+          <Link key={title} href={`/h/${title}`} className="block">
             <p
               className="line-clamp-1 font-semibold break-all hover:underline"
               title={hashtag}
@@ -120,7 +116,7 @@ async function TrendingTopics() {
 
 export default function TrendsSidebar() {
   return (
-    <div className="sticky top-0 hidden h-fit w-72 flex-none space-y-5 rounded-lg shadow-sm md:block lg:w-80">
+    <div className="sticky top-[5.25rem] hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80">
       <Suspense fallback={<TrendsSidebarSkeleton />}>
         <WhoToFollow />
         <TrendingTopics />

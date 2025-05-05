@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
     ],
     domains: ["utfs.io"],
   },
+  rewrites: async () => [
+    {
+      source: "/h/:tag",
+      destination: "/search?q=%23:tag",
+    },
+  ],
 };
 
 export default nextConfig;

@@ -1,6 +1,6 @@
 "use client";
 
-import useFollowerInfo from "@/hooks/useFollowerInfo";
+import useFollowerInfo from "@/hooks/use-follower-info";
 import kyInstance from "@/lib/ky";
 import { FollowerInfo } from "@/lib/types";
 import { QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";

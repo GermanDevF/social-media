@@ -60,7 +60,7 @@ export default async function PostPage({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <main className="flex w-full min-w-0 gap-4">
+    <main className="top-[5.25rem] flex w-full min-w-0 gap-4">
       <div className="w-full min-w-0 space-y-5">
         <Post post={post} />
         {/* <PostCard post={post} />

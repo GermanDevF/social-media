@@ -1,6 +1,6 @@
 "use server";
 
-import { lucia } from "@/auth";
+import { lucia as luciaInstance } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { SignUpValues, signUpSchema } from "@/lib/validations";
 import { hash } from "@node-rs/argon2";
@@ -8,6 +8,7 @@ import { generateIdFromEntropySize } from "lucia";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import streamServerClient from "@/lib/stream";
 
 export async function signUp(
   credentials: SignUpValues,
@@ -50,17 +51,26 @@ export async function signUp(
       return { error: "El correo electrónico ya está en uso" };
     }
 
-    await prisma.user.create({
-      data: {
+    await prisma.$transaction(async (tx) => {
+      await tx.user.create({
+        data: {
+          id: userId,
+          username: username.toLowerCase(),
+          email,
+          passwordHash,
+          displayName: username,
+          name: username,
+        },
+      });
+
+      await streamServerClient.upsertUser({
         id: userId,
         username,
-        email,
-        passwordHash,
-        displayName: username,
         name: username,
-      },
+      });
     });
 
+    const lucia = await luciaInstance();
     const session = await lucia.createSession(userId, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
     const cookie = await cookies();
