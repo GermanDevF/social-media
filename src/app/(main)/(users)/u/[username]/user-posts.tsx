@@ -2,7 +2,6 @@
 
 import InfiniteScrollContainer from "@/components/infinite-scroll-container";
 import Post from "@/components/posts/post";
-import { Button } from "@/components/ui/button";
 import PostsSkeleton from "@/components/ui/skeletons/posts-skeleton";
 import kyInstance from "@/lib/ky";
 import { PostPage } from "@/lib/types";
